@@ -38,6 +38,7 @@ export class MessagesService {
                     break;
                 
                 case 'update':
+                    if (data.txnNumber) return;
                     users.push(data.fullDocumentBeforeChange.author, data.fullDocumentBeforeChange.receiver);
                     
                     if (data.fullDocumentBeforeChange.content !== data.fullDocument.content) {
@@ -59,7 +60,7 @@ export class MessagesService {
         })
     }
 
-    async sendKey(key: string, author: UUID, receiver: UUID) {
+    async sendKey(key: string, author: UUID, receiver: UUID): Promise<Message> {
         const createdMessage = new this.MessageModel({
             type: "key",
             author: author,
@@ -71,17 +72,20 @@ export class MessagesService {
         return createdMessage.save();
     }
 
-    async getKey(author: UUID, receiver: UUID) {
+    async getKey(author: UUID, receiver: UUID): Promise<string | null> {
         const key = (await this.MessageModel.findOne({
             type: "key",
             author: author,
             receiver: receiver
-        })).content;
+        }));
 
-        return key;
+        if (!key)
+            return null;
+
+        return key.content;
     }
 
-    async deleteAllMessages(users: UUID[], deleteKeys: boolean = true) {
+    async deleteAllMessages(users: UUID[], deleteKeys: boolean = true): Promise<void> {
         await this.MessageModel.deleteMany({
             type: deleteKeys ? { $or: ["message", "key"] } : "message",
             $or: [
@@ -91,7 +95,7 @@ export class MessagesService {
         });
     }
 
-    async isConversationReady(users: UUID[]) {
+    async isConversationReady(users: UUID[]): Promise<Boolean> {
         let keysNumber = await this.MessageModel.countDocuments({
             type: "key",
             $or: [

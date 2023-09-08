@@ -8,15 +8,17 @@ import { UUID } from "crypto";
 import { MessageId } from "src/types/messages";
 import { NoConversation } from "src/exceptions/NoConversation";
 import { NoPermissionToDelete } from "src/exceptions/NoPermissionToDelete";
+import { SocketsService } from "src/socket/sockets.service";
 
 @Injectable()
 export class MessagesService {
     constructor(
         @InjectModel(Message.name) private MessageModel: Model<Message>,
-        private messages: DatabaseMessagesService
+        private messages: DatabaseMessagesService,
+        private sockets: SocketsService
     ) {}
 
-    async sendMessage(type: string, author: UUID, receiver: UUID, content: string) {
+    async sendMessage(type: string, author: UUID, receiver: UUID, content: string): Promise<Message> {
         if (!(await this.messages.isConversationReady([author, receiver])))
             throw new NoConversation();
         
@@ -32,7 +34,7 @@ export class MessagesService {
         return createdMessage.save();
     }
 
-    async getMessages(users: UUID[], limit: number = 50, after: string = null) {
+    async getMessages(users: UUID[], limit: number = 50, after: string = null): Promise<Message[]> {
         let query = {
             type: "message",
             $or: [
@@ -43,14 +45,15 @@ export class MessagesService {
 
         after ? query["datetime"] = { $gt: (await this.getMessageById(after)).datetime } : null
 
+        await this.MessageModel.updateMany(query, { $set: { read: true } }).limit(limit);
         return await this.MessageModel.find(query).sort({ datetime: -1 }).limit(limit);
     }
 
-    async getMessageById(id: string) {
+    async getMessageById(id: string): Promise<Message> {
         return await this.MessageModel.findOne({ id: id });
     }
 
-    async deleteMessages(requester: UUID, messagesIds: MessageId[]) {
+    async deleteMessages(requester: UUID, receiver: UUID, messagesIds: MessageId[]): Promise<void> {
         const messages = await this.MessageModel.find({
             type: "messages",
             id: { $in: messagesIds }
@@ -66,5 +69,8 @@ export class MessagesService {
             type: "messages",
             id: { $in: messagesIds }
         });
+
+        this.sockets.sockets[requester].emit("deleteMessages", messagesIds);
+        this.sockets.sockets[receiver].emit("deleteMessages", messagesIds);
     }
 }

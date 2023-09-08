@@ -10,6 +10,7 @@ import { NoPermissionToDelete } from 'src/exceptions/NoPermissionToDelete';
 import { MessagesService } from './messages.service';
 import { MessageNotFound } from 'src/exceptions/MessageNotFound';
 import { InvalidLimit } from 'src/exceptions/InvalidLimit';
+import { Message } from "src/types/messages";
 
 @Controller('messages')
 export class MessagesController {
@@ -25,7 +26,7 @@ export class MessagesController {
         @Headers("Authorization") token: Token,
         @Body("user") user: UUID,
         @Body("content") content: string
-    ) {
+    ): Promise<Message> {
         let requester = await this.users.getUserByToken(token);
 
         if (!(await this.database.isConversationReady([requester.id, user])))
@@ -40,14 +41,14 @@ export class MessagesController {
         @Headers("Authorization") token: Token,
         @Param("user") user: UUID,
         @Body("messages") messagesIds: MessageId[]
-    ) {
+    ): Promise<void> {
         let requester = await this.users.getUserByToken(token);
 
         if (!(await this.database.isConversationReady([requester.id, user])))
             throw new NoConversation();
         
 
-        await this.messages.deleteMessages(requester.id, messagesIds);
+        await this.messages.deleteMessages(requester.id, user, messagesIds);
     }
 
     @Patch()
@@ -56,7 +57,7 @@ export class MessagesController {
         @Headers("Authorization") token: Token,
         @Body("message") messageId: MessageId,
         @Body("content") content: string,
-    ) {
+    ): Promise<void> {
         let requester = await this.users.getUserByToken(token);
         let message = await this.messages.getMessageById(messageId)
         
@@ -77,7 +78,7 @@ export class MessagesController {
         @Param("user") user: UUID,
         @Query("limit") limit: number | null,
         @Query("after") after: MessageId | null
-    ) {
+    ): Promise<Message[]> {
         let requester = await this.users.getUserByToken(token);
         if (limit <= 1 || limit > 50)
             throw new InvalidLimit();
@@ -89,7 +90,7 @@ export class MessagesController {
     async getMessage(
         @Headers("Authorization") token: Token,
         @Param("message") messageId: MessageId,
-    ) {
+    ): Promise<Message> {
         let requester = await this.users.getUserByToken(token);
         let message = await this.messages.getMessageById(messageId);
 

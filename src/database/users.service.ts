@@ -35,6 +35,8 @@ export class UsersService {
                     } else if (data.fullDocumentBeforeChange.lastExitTime !== data.fullDocument.lastExitTime) {
                         eventName = "changeStatus";
                         eventData = { user: data.fullDocumentBeforeChange.id, status: "offline" };
+                    } else if (data.fullDocumentBeforeChange.conversationsWith !== data.fullDocument.conversationsWith) {
+                        
                     }
                     break;
                 case "delete":

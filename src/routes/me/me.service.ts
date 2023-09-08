@@ -15,7 +15,7 @@ export class MeService {
         private messages: MessagesService
     ) {}
 
-    async deleteAccount(token: Token, password: string) {        
+    async deleteAccount(token: Token, password: string): Promise<void> {        
         const hash = createHash("sha256").update(token).digest("hex");
         const user = await this.UserModel.findOne({ token: hash });
         await this.UserModel.deleteOne({ token: hash, password: generatePasswordHash(password) });

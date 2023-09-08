@@ -1,10 +1,10 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UseFilters } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { createHash, randomUUID } from "crypto";
 import { Model } from "mongoose";
 import { User } from "src/database/schemas/user.schema";
-import { InvalidAccountParameters } from "src/exceptions/InvalidLength";
 import { generatePasswordHash, generateToken } from "src/utils/users";
+import { MongoErrorFilter } from "./account.filters";
 
 @Injectable()
 export class AccountService {
@@ -13,7 +13,7 @@ export class AccountService {
         @InjectModel(User.name) private UserModel: Model<User>,
     ) {}
 
-    async createAccount(name: string, nickname: string, password: string) {
+    async createAccount(name: string, nickname: string, password: string): Promise<User> {
         const uuid = randomUUID();
         const passwordHash = generatePasswordHash(password);
         const token = createHash("sha256").update(generateToken(uuid, password)).digest("hex");
@@ -26,11 +26,7 @@ export class AccountService {
             token: token,
         });
 
-        try {
-            return await createdUser.save();
-        } catch (error) {
-            throw new InvalidAccountParameters();
-        }
+        return createdUser.save();
     }
 
 }

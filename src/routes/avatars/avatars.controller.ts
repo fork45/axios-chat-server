@@ -33,7 +33,7 @@ export class AvatarsController {
     async setAvatar(
         @Headers("Authorization") token: Token,
         @UploadedFile() file: Express.Multer.File
-    ) {
+    ): Promise<void> {
         if (file.mimetype !== "image/png" && file.mimetype !== "image/jpeg")
             throw new InvalidAvatarFormat();
         else if (file.size === 0)
@@ -50,7 +50,10 @@ export class AvatarsController {
     }
 
     @Get(":hash")
-    async getAvatar(@Res() response: Response, @Param("hash") hash: string): Promise<Response> {
+    async getAvatar(
+        @Res() response: Response,
+        @Param("hash") hash: string
+    ): Promise<Response> {
         try {
             var avatar = await this.storage.getAvatar(hash);
         } catch (error) {

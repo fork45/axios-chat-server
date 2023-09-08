@@ -1,5 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { LoginService } from './login.service';
+import { User } from 'src/types/users';
 
 @Controller('login')
 export class LoginController {
@@ -11,7 +12,7 @@ export class LoginController {
     async login(
         @Param("name") name: string,
         @Param("password") password: string
-    ) {
+    ): Promise<User> {
         return (await this.loginService.login(name, password));
     }
 }

@@ -19,7 +19,7 @@ export class KeyController {
         @Headers("Authorization") token: Token,
         @Body("user") user: UUID,
         @Body("user") key: string
-    ) {
+    ): Promise<void> {
         let author = await this.users.getUserByToken(token);
         if (this.messages.isConversationReady([author.id, user]))
             throw new ConversationExists();
@@ -32,7 +32,7 @@ export class KeyController {
     async getKey(
         @Headers("Authorization") token: Token,
         @Body("user") user: UUID
-    ) {
+    ): Promise<{ key: string }> {
         let author = await this.users.getUserByToken(token);
 
         if (!(await this.messages.isConversationReady([author.id, user])))

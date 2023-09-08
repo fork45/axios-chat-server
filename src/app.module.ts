@@ -18,6 +18,8 @@ import { MessagesService as RouteMessagesService } from './routes/messages/messa
 import { MeService } from './routes/me/me.service';
 import { LoginService } from './routes/login/login.service';
 import { AccountService } from './routes/account/account.service';
+import { APP_FILTER } from '@nestjs/core';
+import { MongoErrorFilter, MongoServerErrorFilter } from './routes/account/account.filters';
 
 @Module({
     imports: [
@@ -42,7 +44,9 @@ import { AccountService } from './routes/account/account.service';
         RouteMessagesService,
         MeService,
         LoginService,
-        AccountService
+        AccountService,
+        {provide: APP_FILTER, useClass: MongoErrorFilter},
+        {provide: APP_FILTER, useClass: MongoServerErrorFilter}
     ],
 })
 export class AppModule {

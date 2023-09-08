@@ -13,19 +13,27 @@ export class MeController {
     ) {}
 
     @Get()
-    async getAccount(@Headers("Authorization") token: Token): Promise<User> {
+    async getAccount(
+        @Headers("Authorization") token: Token
+    ): Promise<User> {
         return (await this.users.getUserByToken(token)).toObject({ versionKey: false });
     };
 
     @Delete(":password")
     @HttpCode(204)
-    async deleteAccount(@Headers("Authorization") token: Token, @Param("password") password: string) {
+    async deleteAccount(
+        @Headers("Authorization") token: Token,
+        @Param("password") password: string
+    ): Promise<void> {
         await this.me.deleteAccount(token, password);
     }
 
     @Patch("nickname")
     @HttpCode(204)
-    async changeNickname(@Body("nickname") nickname: string, @Headers("Authorization") token: Token) {
+    async changeNickname(
+        @Body("nickname") nickname: string,
+        @Headers("Authorization") token: Token
+    ): Promise<void> {
         (await this.users.getUserByToken(token)).updateOne({ nickname: nickname });
     }
 
@@ -34,7 +42,7 @@ export class MeController {
     async changePassword(
         @Body("password") password: string,
         @Body("newPassword") newPassword: string
-    ) {
+    ): Promise<void> {
         (await this.users.getUserByPassword(password)).updateOne({ password: generatePasswordHash(newPassword) });
     }
 }

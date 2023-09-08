@@ -18,7 +18,7 @@ export class ConversationsService {
         private sockets: SocketsService
     ) {}
 
-    async createConversation(users: UUID[]) {
+    async createConversation(users: UUID[]): Promise<void> {
         if (!(await this.UserModel.findOne({ id: users[0] })).conversationsWith.includes(users[1])) {
             throw new ConversationExists();
         }
@@ -27,7 +27,7 @@ export class ConversationsService {
         await this.UserModel.updateOne({ id: users[1] }, { $push: { conversationsWith: users[0] } });
     }
 
-    async getConversation(requester: UUID, id: UUID) {
+    async getConversation(requester: UUID, id: UUID): Promise<ConversationUser> {
         const user = await this.UserModel.findOne({ id: id });
         const data: ConversationUser = user.publicData as ConversationUser;
         data.key = await this.messages.getKey(requester, id);
@@ -37,13 +37,14 @@ export class ConversationsService {
         return data;
     }
 
-    async getConversations(user: UUID) {
-        return (await this.UserModel.findOne({ id: user })).conversationsWith.map(async id => {
-            return await this.getConversation(user, id);
-        });
+    async getConversations(user: UUID): Promise<ConversationUser[]> {
+        const conversations = (await this.UserModel.findOne({ id: user })).conversationsWith
+        return await Promise.all(conversations.map(async id =>
+            await this.getConversation(user, id)
+        ));
     }
 
-    async deleteConversation(users: UUID[]) {
+    async deleteConversation(users: UUID[]): Promise<void> {
         if ((await this.UserModel.findOne({ id: users[0] })).conversationsWith.includes(users[1])) {
             throw new NoConversation();
         }

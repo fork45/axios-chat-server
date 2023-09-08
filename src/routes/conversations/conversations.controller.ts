@@ -2,7 +2,7 @@ import { Controller, Get, Post, Delete, Param, Headers, Body, HttpCode, HttpExce
 import { UUID } from 'crypto';
 import { MessagesService } from 'src/database/messages.service';
 import { UsersService } from 'src/database/users.service';
-import { PublicUser, Token } from 'src/types/users';
+import { ConversationUser, PublicUser, Token } from 'src/types/users';
 import { ConversationsService } from './conversations.service';
 import { NoConversation } from 'src/exceptions/NoConversation';
 import { ConversationExists } from 'src/exceptions/ConversationExists';
@@ -17,14 +17,19 @@ export class ConversationsController {
     ) {}
 
     @Get()
-    async getConversations(@Headers("Authorization") token: Token) {
-        return await this.conversations.getConversations((await this.users.getUserByToken(token)).id);
+    async getConversations(
+        @Headers("Authorization") token: Token
+    ): Promise<ConversationUser[]> {
+        return this.conversations.getConversations((await this.users.getUserByToken(token)).id);
     }
 
     @Get(":user")
-    async getUser(@Headers("Authorization") token: Token, @Param("user") user: UUID) {
+    async getUser(
+        @Headers("Authorization") token: Token,
+        @Param("user") user: UUID
+    ): Promise<ConversationUser> {
         let requester = await this.users.getUserByToken(token);
-        if (!requester.conversationsWith.includes(user))
+        if (!await this.messages.getKey(requester.id, user))
             throw new UserNotFound();
         
         return (await this.conversations.getConversation(requester.id, user));
@@ -36,7 +41,7 @@ export class ConversationsController {
         @Headers("Authorization") token: Token, 
         @Body("user") user: string,
         @Body("key") key: string
-    ) {
+    ): Promise<void> {
         let author = await this.users.getUserByToken(token);
         let receiver = await this.users.getUserByName(user);
 
@@ -55,7 +60,7 @@ export class ConversationsController {
     ) {
         let author = await this.users.getUserByToken(token);
 
-        if (!(await this.messages.isConversationReady([author.id, user])))
+        if (!author.conversationsWith.includes(user))
             throw new NoConversation();
 
         await this.conversations.deleteConversation([author.id, user]);

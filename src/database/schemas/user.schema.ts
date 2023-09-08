@@ -3,7 +3,7 @@ import { UUID, randomUUID } from "crypto";
 import { Document, VirtualType } from "mongoose";
 import { PublicUser, Token } from "src/types/users";
 
-@Schema({ collection: "users" })
+@Schema({ collection: "users", validateBeforeSave: true })
 export class User extends Document {
     @Prop({ required: true, unique: true, immutable: true })
     id: UUID;
@@ -14,7 +14,7 @@ export class User extends Document {
     @Prop({ required: true, maxlength: 255, minlength: 4, match: /^[a-zA-Z0-9]+$/ })
     nickname: string;
     
-    @Prop({ required: true, maxlength: 30, minlength: 8 })
+    @Prop({ required: true })
     password: string;
     
     @Prop({ unique: true })
