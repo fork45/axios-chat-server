@@ -1,10 +1,12 @@
 import { Injectable, Req, Res } from '@nestjs/common';
 import crypto from "crypto";
 import * as AWS from 'aws-sdk';
+
 import { AvatarNotFound } from 'src/exceptions/AvatarNotFound';
 
 @Injectable()
 export class StorageService {
+
     AWS_S3_BUCKET = process.env.avatarsBucket;
     s3 = new AWS.S3({
         accessKeyId: process.env.AWSAccessKeyId,
@@ -41,4 +43,5 @@ export class StorageService {
             Key: hash,
         }).promise();
     }
+    
 }

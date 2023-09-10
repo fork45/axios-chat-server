@@ -14,6 +14,7 @@ import { IncorrectPassword } from 'src/exceptions/IncorrectPassword';
 
 @Injectable()
 export class UsersService {
+    
     constructor(
         @InjectModel(User.name) private UserModel: Model<User>,
         private sockets: SocketsService
@@ -98,4 +99,5 @@ export class UsersService {
 
         return user;
     }
+    
 }

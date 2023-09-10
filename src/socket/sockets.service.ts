@@ -8,6 +8,7 @@ import { UsersService } from 'src/database/users.service';
 
 @Injectable()
 export class SocketsService {
+    
     private socketServer: Server;
     public sockets: Sockets;
 
@@ -67,4 +68,5 @@ export class SocketsService {
     get server(): Server {
         return this.socketServer;
     }
+
 }
