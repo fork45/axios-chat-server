@@ -1,9 +1,10 @@
 import { Server, Socket } from 'socket.io';
 import { Injectable } from '@nestjs/common';
+import { UUID } from 'crypto';
+
 import { SocketData, Sockets, statuses } from 'src/types/socket';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 import { UsersService } from 'src/database/users.service';
-import { UUID } from 'crypto';
 
 @Injectable()
 export class SocketsService {
@@ -44,14 +45,14 @@ export class SocketsService {
 
             socket.on("typing", async (data: { user: UUID }) => {
                 if (!socket.rooms.has(data.user))
-                    return socket.emit("error", { message: "No conversation with this user" })
+                    return socket.emit("error", { opcode: "NO_CONVERSATION", user: user })
 
                 this.sockets[data.user].emit("userTyping", { user: user.id })
             });
 
             socket.on("changeStatus", async (data: { status: statuses }) => {
                 if (!(data.status satisfies statuses))
-                    return socket.emit("error", { message: "Invalid status" });
+                    return socket.emit("error", { opcode: "INVALID_STATUS", status: status });
                 else if (socket.data.status === data.status)
                     return;
                 

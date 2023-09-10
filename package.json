@@ -13,7 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
@@ -31,6 +31,7 @@
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
+    "@compodoc/compodoc": "^1.1.21",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
@@ -44,7 +45,9 @@
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "install": "^0.13.0",
     "jest": "^29.5.0",
+    "mongodb-memory-server": "^8.15.1",
     "prettier": "^3.0.0",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
@@ -60,7 +63,10 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "roots": [
+      "<rootDir>"
+    ],
+    "rootDir": "",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -69,6 +75,12 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "modulePaths": [
+      "<rootDir>"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ]
   }
 }

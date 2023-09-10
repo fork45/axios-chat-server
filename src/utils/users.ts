@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+
 import { Token } from "src/types/users";
 
 export function generateToken(uuid: string, password: string): Token {

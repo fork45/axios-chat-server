@@ -1,0 +1,23 @@
+opcode,description,http_code
+NO_TOKEN,No Token in request headers,401
+INVALID_TOKEN,No user with token from request headers was found,401
+INVALID_PASSWORD_LENGTH,Invalid password length,400
+NAME_DOESNT_MATCH_REGEX,Name doesnt match regex,400
+NICKNAME_DOESNT_MATCH_REGEX,Nickname doesnt match regex,400
+NAME_IS_TAKEN,Someone already take this name in db,400
+INCORRECT_PASSWORD,Password is different from the password in the db,400
+INVALID_AVATAR_FORMAT,Avatar can be only a jpeg or png pic,400
+INVALID_AVATAR_SIZE,Max avatar size is 10mb,400
+INVALID_STATUS,Status can be only online; do not disturb and hidden (offline),400
+NO_CONVERSATION,You don't have conversation with this user,404
+USER_NOT_FOUND,User not found in db,404
+AVATAR_NOT_FOUND,Avatar with this hash is not found in db,404
+INVALID_SECURITY_KEY,RSA Key is invalid and not working,400
+CONVERSATION_EXISTS,You have conversation with this user,400
+CONVERSATION_NOT_READY,One sides haven't sent the security key yet,403
+INVALID_MESSAGE_LENGTH,Invalid message length,400
+INVALID_LIMIT,Limit can't be low than 2 and higher than 100,400
+MESSAGE_NOT_FOUND,Message not found in db,404
+NO_PERMISSION_TO_EDIT,You can't edit this message,403
+INVALID_MESSAGES_NUMBER,Messages number can't be low than 2 and higher than 100,403
+NO_PERMISSION_TO_DELETE,You can't delete this message,403

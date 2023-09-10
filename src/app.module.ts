@@ -1,6 +1,8 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
-import { AccountController } from './routes/account/account.controller';
 import { MongooseModule } from '@nestjs/mongoose';
+import { APP_FILTER } from '@nestjs/core';
+
+import { AccountController } from './routes/account/account.controller';
 import { User, UserSchema } from './database/schemas/user.schema';
 import { Message, MessageSchema } from './database/schemas/message.schema';
 import { MeController } from './routes/me/me.controller';
@@ -18,7 +20,6 @@ import { MessagesService as RouteMessagesService } from './routes/messages/messa
 import { MeService } from './routes/me/me.service';
 import { LoginService } from './routes/login/login.service';
 import { AccountService } from './routes/account/account.service';
-import { APP_FILTER } from '@nestjs/core';
 import { MongoErrorFilter, MongoServerErrorFilter } from './routes/account/account.filters';
 
 @Module({

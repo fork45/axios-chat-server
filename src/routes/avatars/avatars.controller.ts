@@ -11,15 +11,16 @@ import {
 } from '@nestjs/common';
 import { Response } from "express"
 import { FileInterceptor } from '@nestjs/platform-express';
+
 import { UsersService } from 'src/database/users.service';
 import { StorageService } from 'src/storage/storage.service';
 import { Token } from 'src/types/users';
 import { InvalidAvatarFormat } from 'src/exceptions/InvalidAvatarFormat';
 import { InvalidAvatarSize } from 'src/exceptions/InvalidAvatarSize';
-import { AvatarNotFound } from 'src/exceptions/AvatarNotFound';
 
 @Controller('avatars')
 export class AvatarsController {
+
     constructor(
         private users: UsersService,
         private storage: StorageService
@@ -54,12 +55,9 @@ export class AvatarsController {
         @Res() response: Response,
         @Param("hash") hash: string
     ): Promise<Response> {
-        try {
-            var avatar = await this.storage.getAvatar(hash);
-        } catch (error) {
-            throw new AvatarNotFound();
-        }
+        let avatar = await this.storage.getAvatar(hash);
 
         return response.set("Content-Type", avatar.ContentType).send(avatar.Body);
     }
+    
 }

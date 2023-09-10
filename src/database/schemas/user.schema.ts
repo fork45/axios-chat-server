@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { UUID, randomUUID } from "crypto";
-import { Document, VirtualType } from "mongoose";
+import { UUID } from "crypto";
+import { Document } from "mongoose";
+
 import { PublicUser, Token } from "src/types/users";
 
 @Schema({ collection: "users", validateBeforeSave: true })

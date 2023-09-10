@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { UUID } from "crypto";
 import { Document } from "mongoose";
-import { MessageId, MessageTypes } from "src/types/messages";
+
+import { MessageId, MessageTypes, Message as MessageType, KeyMessage} from "src/types/messages";
 import { generateMessageId } from "src/utils/messages";
 
 @Schema({ collection: "messages" })
@@ -29,6 +30,19 @@ export class Message extends Document {
     
     @Prop({ required: false, default: false })
     read: boolean;
+
+    publicData: MessageType | KeyMessage;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);
+
+MessageSchema.virtual("publicData").get(function () {
+    delete this._id;
+
+    if (this.type === "key") {
+        delete this.read;
+        delete this.editDatetime;
+    }
+
+    return this;
+});

@@ -1,4 +1,14 @@
-import { Controller, Get, Headers, Param, Delete, Patch, Body, HttpCode, Header} from '@nestjs/common';
+import {
+    Controller,
+    Get,
+    Headers,
+    Param,
+    Delete,
+    Patch,
+    Body,
+    HttpCode
+} from '@nestjs/common';
+
 import { UsersService } from 'src/database/users.service';
 import { Token, User } from 'src/types/users';
 import { generatePasswordHash } from 'src/utils/users';
@@ -45,4 +55,5 @@ export class MeController {
     ): Promise<void> {
         (await this.users.getUserByPassword(password)).updateOne({ password: generatePasswordHash(newPassword) });
     }
+    
 }

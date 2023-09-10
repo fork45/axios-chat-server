@@ -1,11 +1,11 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { UUID } from 'crypto';
+import mongoose from 'mongoose';
+
 import { User } from './schemas/user.schema';
 import { Message } from './schemas/message.schema';
-import { UUID } from 'crypto';
-import { MessageId } from 'src/types/messages';
-import mongoose from 'mongoose';
 import { SocketsService } from 'src/socket/sockets.service';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class MessagesService {
                     users.push(data.fullDocument.author, data.fullDocument.receiver);
 
                     eventName = data.fullDocument.type === "key" ? "conversationKey" : "newMessage";
-                    eventData = data.fullDocument.toObject({ versionKey: false });
+                    eventData = data.fullDocument.publicData;
                     break;
                 
                 case "delete":
@@ -43,7 +43,7 @@ export class MessagesService {
                     
                     if (data.fullDocumentBeforeChange.content !== data.fullDocument.content) {
                         eventName = "messageEdit";
-                        eventData = data.fullDocument.toObject({ versionKey: false });
+                        eventData = data.fullDocument.publicData;
                     } else if (data.fullDocumentBeforeChange.read !== data.fullDocument.read) {
                         eventName = "readMessage";
                         eventData = { id: data.fullDocument.id };
@@ -72,7 +72,7 @@ export class MessagesService {
         return createdMessage.save();
     }
 
-    async getKey(author: UUID, receiver: UUID): Promise<string | null> {
+    async getKey(author: UUID, receiver: UUID): Promise<Message | null> {
         const key = (await this.MessageModel.findOne({
             type: "key",
             author: author,
@@ -82,7 +82,7 @@ export class MessagesService {
         if (!key)
             return null;
 
-        return key.content;
+        return key;
     }
 
     async deleteAllMessages(users: UUID[], deleteKeys: boolean = true): Promise<void> {

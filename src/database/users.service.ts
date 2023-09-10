@@ -1,12 +1,16 @@
 import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './schemas/user.schema';
-import { randomUUID, createHash, UUID } from 'crypto';
-import { generatePasswordHash, generateToken } from "src/utils/users"
-import { Token } from 'src/types/users';
+import { createHash, UUID } from 'crypto';
 import mongoose from 'mongoose';
+
+import { User } from './schemas/user.schema';
+import { generatePasswordHash } from "src/utils/users"
+import { Token } from 'src/types/users';
 import { SocketsService } from 'src/socket/sockets.service';
+import { InvalidToken } from 'src/exceptions/InvalidToken';
+import { UserNotFound } from 'src/exceptions/UserNotFound';
+import { IncorrectPassword } from 'src/exceptions/IncorrectPassword';
 
 @Injectable()
 export class UsersService {
@@ -36,7 +40,10 @@ export class UsersService {
                         eventName = "changeStatus";
                         eventData = { user: data.fullDocumentBeforeChange.id, status: "offline" };
                     } else if (data.fullDocumentBeforeChange.conversationsWith !== data.fullDocument.conversationsWith) {
-                        
+                        for (const user of data.fullDocumentBeforeChange.conversationsWith) {
+                            if (data.fullDocument.conversationsWith.includes(user))
+                                return this.sockets.sockets[user]?.emit("conversationDelete", { user: user });
+                        }
                     }
                     break;
                 case "delete":
@@ -54,21 +61,41 @@ export class UsersService {
         });
     }
 
-    async getUserByUUID(uuid: string) {
-        return await this.UserModel.findOne({ id: uuid });
+    async getUserByUUID(uuid: string): Promise<User> {
+        const user = await this.UserModel.findOne({ id: uuid });
+
+        if (!user)
+            throw new UserNotFound();
+
+        return user;
     }
 
-    async getUserByToken(token: Token) {
+    async getUserByToken(token: Token): Promise<User> {
         let tokenHash = createHash("sha256").update(token).digest("hex");
 
-        return await this.UserModel.findOne({ token: token });
+        const user = await this.UserModel.findOne({ token: token });
+
+        if (!user)
+            throw new InvalidToken();
+
+        return user;
     }
 
-    async getUserByPassword(password: string) {
-        return await this.UserModel.findOne({ password: generatePasswordHash(password) });
+    async getUserByPassword(password: string): Promise<User> {
+        const user = await this.UserModel.findOne({ password: generatePasswordHash(password) });
+    
+        if (!user)
+            throw new IncorrectPassword();
+
+        return user;
     }
 
-    async getUserByName(name: string) {
-        return await this.UserModel.findOne({ name: name });
+    async getUserByName(name: string): Promise<User> {
+        const user = await this.UserModel.findOne({ name: name });
+
+        if (!user)
+            throw new UserNotFound();
+
+        return user;
     }
 }

@@ -1,12 +1,18 @@
-import { Controller, Post, HttpCode, Body, UseFilters } from '@nestjs/common';
+import {
+    Controller,
+    Post,
+    HttpCode,
+    Body,
+    UseFilters
+} from '@nestjs/common';
+
 import { User, CreateAccountBody} from 'src/types/users';
 import { AccountService } from './account.service';
 import { InvalidPasswordLength } from 'src/exceptions/InvalidPasswordLength';
 import { MongoErrorFilter } from './account.filters';
-import { MongoServerError } from 'mongodb';
 
 @Controller('account')
-@UseFilters(MongoErrorFilter, MongoServerError)
+@UseFilters(MongoErrorFilter)
 export class AccountController {
     
     constructor(private accounts: AccountService) {}
@@ -24,5 +30,6 @@ export class AccountController {
         );
 
         return user.toObject({ versionKey: false });
-    };
+    }
+
 }

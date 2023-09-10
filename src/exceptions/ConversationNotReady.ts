@@ -1,9 +1,9 @@
 import { HttpException } from "@nestjs/common";
 
-export class NoPermissionToEdit extends HttpException {
+export class ConversationNotReady extends HttpException {
     constructor() {
         super({
-            opcode: "NO_PERMISSION_TO_EDIT"
+            opcode: "CONVERSATION_NOT_READY"
         }, 403);
     }
 }

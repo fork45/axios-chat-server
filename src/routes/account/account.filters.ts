@@ -1,9 +1,13 @@
-import { Catch, ExceptionFilter, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import {
+    Catch,
+    ExceptionFilter,
+    ArgumentsHost
+} from '@nestjs/common';
 import mongoose, { Error } from 'mongoose';
+
 import { NameDoesntMatch } from 'src/exceptions/NameDoesntMatch';
 import { NameTaken } from 'src/exceptions/NameTaken';
 import { NicknameDoesntMatch } from 'src/exceptions/NicknameDoesntMatch';
-import { MongoServerError } from "mongodb";
 
 @Catch(Error.ValidatorError)
 export class MongoErrorFilter implements ExceptionFilter {
@@ -29,6 +33,5 @@ export class MongoServerErrorFilter implements ExceptionFilter {
     catch(exception: mongoose.mongo.MongoServerError, host: ArgumentsHost) {
         if (exception.code === 11000)
             throw new NameTaken();
-        
     }
 }

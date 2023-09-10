@@ -4,6 +4,6 @@ export class NoPermissionToDelete extends HttpException {
     constructor() {
         super({
             opcode: "NO_PERMISSION_TO_DELETE"
-        }, 401);
+        }, 403);
     }
 }

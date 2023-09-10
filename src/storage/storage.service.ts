@@ -1,6 +1,7 @@
 import { Injectable, Req, Res } from '@nestjs/common';
 import crypto from "crypto";
 import * as AWS from 'aws-sdk';
+import { AvatarNotFound } from 'src/exceptions/AvatarNotFound';
 
 @Injectable()
 export class StorageService {
@@ -23,10 +24,15 @@ export class StorageService {
     }
 
     async getAvatar(hash: string) {
-        return this.s3.getObject({
-            Bucket: this.AWS_S3_BUCKET,
-            Key: hash,
-        }).promise();
+        try {
+            return this.s3.getObject({
+                Bucket: this.AWS_S3_BUCKET,
+                Key: hash,
+            }).promise();
+        } catch (error) {
+            throw new AvatarNotFound();
+        }
+
     }
 
     async deleteAvatar(hash: string) {

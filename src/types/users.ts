@@ -1,5 +1,4 @@
 import { UUID } from "crypto";
-import { statuses } from "./socket";
 
 export type Token = `${string}.${string}.${string}`;
 
@@ -17,7 +16,7 @@ export interface PublicUser {
 }
 
 export interface ConversationUser extends PublicUser {
-    status: "online" | "offline" | "do not disturb";
+    status: "online" | "do not disturb" | "offline";
     key: string;
 }
 
