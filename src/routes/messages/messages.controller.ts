@@ -14,7 +14,7 @@ import { UUID } from 'crypto';
 
 import { UsersService } from 'src/database/users.service';
 import { MessagesService as DatabaseMessagesService } from 'src/database/messages.service';
-import { MessageId } from 'src/types/messages';
+import { MessageId, Message as MessageType } from 'src/types/messages';
 import { Token } from 'src/types/users';
 import { NoConversation } from 'src/exceptions/NoConversation';
 import { NoPermissionToEdit } from 'src/exceptions/NoPermissionToEdit';
@@ -23,6 +23,7 @@ import { MessagesService } from './messages.service';
 import { MessageNotFound } from 'src/exceptions/MessageNotFound';
 import { InvalidLimit } from 'src/exceptions/InvalidLimit';
 import { Message } from "src/types/messages";
+import { ConversationNotReady } from 'src/exceptions/ConversationNotReady';
 
 @Controller('messages')
 export class MessagesController {
@@ -42,10 +43,12 @@ export class MessagesController {
     ): Promise<Message> {
         let requester = await this.users.getUserByToken(token);
 
-        if (!(await this.database.isConversationReady([requester.id, user])))
+        if (!requester.conversationsWith.includes(user))
             throw new NoConversation();
+        else if (!await this.database.getKey(requester.id, user))
+            throw new ConversationNotReady();
 
-        return (await this.messages.sendMessage("message", requester.id, user, content)).publicData;
+        return (await this.messages.sendMessage(requester.id, user, content)).publicData as MessageType;
     }
 
     @Post(":user/bulk")
@@ -80,8 +83,7 @@ export class MessagesController {
 
         await message.updateOne({
             $set: {
-                content: content,
-                editDatetime: new Date().getTime() / 1000
+                content: content
             }
         });
     }
@@ -99,7 +101,7 @@ export class MessagesController {
             throw new InvalidLimit();
         
         const messages = await this.messages.getMessages([requester.id, user], limit ? limit : 50, after);
-        return Promise.all(messages.map(message => message.publicData));;
+        return Promise.all(messages.map(message => message.publicData as MessageType));;
     }
 
     @Get(":message")
@@ -114,7 +116,7 @@ export class MessagesController {
             throw new MessageNotFound();
         
 
-        return message.publicData;
+        return message.publicData as MessageType;
     }
     
     @Delete(":message")

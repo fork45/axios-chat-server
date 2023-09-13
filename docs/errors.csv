@@ -13,6 +13,7 @@ NO_CONVERSATION,You don't have conversation with this user,404
 USER_NOT_FOUND,User not found in db,404
 AVATAR_NOT_FOUND,Avatar with this hash is not found in db,404
 INVALID_SECURITY_KEY,RSA Key is invalid and not working,400
+NO_PERMISSION_TO_SEND_KEY,You can't send rsa key,403
 CONVERSATION_EXISTS,You have conversation with this user,400
 CONVERSATION_NOT_READY,One sides haven't sent the security key yet,403
 INVALID_MESSAGE_LENGTH,Invalid message length,400

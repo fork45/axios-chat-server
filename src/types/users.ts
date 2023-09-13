@@ -2,10 +2,11 @@ import { UUID } from "crypto";
 
 export type Token = `${string}.${string}.${string}`;
 
-export interface CreateAccountBody {
+export interface CreateAccountDTO {
     name: string,
     nickname: string,
-    password: string
+    password: string,
+    publicKey: string,
 };
 
 export interface PublicUser {
@@ -15,9 +16,9 @@ export interface PublicUser {
     avatar: null | string,
 }
 
-export interface ConversationUser extends PublicUser {
+export interface Profile extends PublicUser {
     status: "online" | "do not disturb" | "offline";
-    key: string;
+    rsaKey: string;
 }
 
 export interface User {

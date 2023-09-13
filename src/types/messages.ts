@@ -1,6 +1,6 @@
 import { UUID } from "crypto";
 
-export type MessageTypes = "message" | "key";
+export type MessageTypes = "message" | "rsa_key" | "aes_key";
 export type MessageId = `${number}`;
 
 export interface Message {
@@ -15,7 +15,7 @@ export interface Message {
 }
 
 export interface KeyMessage extends Message {
-    type: "key";
+    type: "rsa_key" | "aes_key";
     editDatetime: null;
     read: false;
 }

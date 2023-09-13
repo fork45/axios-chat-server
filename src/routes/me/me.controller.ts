@@ -38,15 +38,6 @@ export class MeController {
         await this.me.deleteAccount(token, password);
     }
 
-    @Patch("nickname")
-    @HttpCode(204)
-    async changeNickname(
-        @Body("nickname") nickname: string,
-        @Headers("Authorization") token: Token
-    ): Promise<void> {
-        (await this.users.getUserByToken(token)).updateOne({ nickname: nickname });
-    }
-
     @Patch("password")
     @HttpCode(204)
     async changePassword(

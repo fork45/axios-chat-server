@@ -3,6 +3,7 @@ import { UUID } from "crypto";
 import { Document } from "mongoose";
 
 import { PublicUser, Token } from "src/types/users";
+import { isValidPublicRsaKey } from "src/utils/keys";
 
 @Schema({ collection: "users", validateBeforeSave: true })
 export class User extends Document {
@@ -32,6 +33,9 @@ export class User extends Document {
     
     @Prop({ default: null })
     avatar: string | null;
+
+    @Prop({ required: true, validate: { validator: isValidPublicRsaKey }})
+    publicKey: string;
 
     publicData: PublicUser;
 }

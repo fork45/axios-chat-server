@@ -20,12 +20,12 @@ export class MessagesService {
         private sockets: SocketsService
     ) {}
 
-    async sendMessage(type: string, author: UUID, receiver: UUID, content: string): Promise<Message> {
+    async sendMessage(author: UUID, receiver: UUID, content: string): Promise<Message> {
         if (!(await this.messages.isConversationReady([author, receiver])))
             throw new NoConversation();
         
         const createdMessage = new this.MessageModel({
-            type: type,
+            type: "message",
             author: author,
             receiver: receiver,
             content: content,

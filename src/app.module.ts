@@ -9,6 +9,7 @@ import { MeController } from './routes/me/me.controller';
 import { LoginController } from './routes/login/login.controller';
 import { ConversationsController } from './routes/conversations/conversations.controller';
 import { KeyController } from './routes/keys/keys.controller';
+import { KeysService } from './routes/keys/keys.service';
 import { MessagesController } from './routes/messages/messages.controller';
 import { AvatarsController } from './routes/avatars/avatars.controller';
 import { UsersService } from './database/users.service';
@@ -21,6 +22,9 @@ import { MeService } from './routes/me/me.service';
 import { LoginService } from './routes/login/login.service';
 import { AccountService } from './routes/account/account.service';
 import { MongoErrorFilter, MongoServerErrorFilter } from './routes/account/account.filters';
+import { ProfileController } from './routes/profile/profile.controller';
+import { ProfileService } from './routes/profile/profile.service';
+import { ProfileFilter } from './routes/profile/profile.filter';
 
 @Module({
     imports: [
@@ -35,7 +39,8 @@ import { MongoErrorFilter, MongoServerErrorFilter } from './routes/account/accou
         ConversationsController,
         KeyController,
         MessagesController,
-        AvatarsController
+        AvatarsController,
+        ProfileController
     ],
     providers: [
         UsersService,
@@ -46,8 +51,11 @@ import { MongoErrorFilter, MongoServerErrorFilter } from './routes/account/accou
         MeService,
         LoginService,
         AccountService,
+        KeysService,
+        ProfileService,
         {provide: APP_FILTER, useClass: MongoErrorFilter},
-        {provide: APP_FILTER, useClass: MongoServerErrorFilter}
+        {provide: APP_FILTER, useClass: MongoServerErrorFilter},
+        {provide: APP_FILTER, useClass: ProfileFilter}
     ],
 })
 export class AppModule {

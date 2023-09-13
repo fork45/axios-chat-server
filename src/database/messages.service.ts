@@ -25,7 +25,7 @@ export class MessagesService {
                 case "insert":
                     users.push(data.fullDocument.author, data.fullDocument.receiver);
 
-                    eventName = data.fullDocument.type === "key" ? "conversationKey" : "newMessage";
+                    eventName = data.fullDocument.type === "message" ? "newMessage" : ( data.fullDocument.type === "aes_key" ? "aesKey" : "rsaKey" );
                     eventData = data.fullDocument.publicData;
                     break;
                 
@@ -44,6 +44,13 @@ export class MessagesService {
                     if (data.fullDocumentBeforeChange.content !== data.fullDocument.content) {
                         eventName = "messageEdit";
                         eventData = data.fullDocument.publicData;
+
+                        await data.fullDocument.updateOne({
+                            $set: {editDatetime: new Date().getTime() / 1000}
+                        });
+
+                        if (!(data.fullDocument.type === "message"))
+                            eventName = "aesKeyEdit"
                     } else if (data.fullDocumentBeforeChange.read !== data.fullDocument.read) {
                         eventName = "readMessage";
                         eventData = { id: data.fullDocument.id };
@@ -60,9 +67,9 @@ export class MessagesService {
         })
     }
 
-    async sendKey(key: string, author: UUID, receiver: UUID): Promise<Message> {
+    async sendKey(key: string, author: UUID, receiver: UUID, isRSAKey: boolean = true): Promise<Message> {
         const createdMessage = new this.MessageModel({
-            type: "key",
+            type: isRSAKey ? "rsa_key" : "aes_key",
             author: author,
             receiver: receiver,
             content: key,
@@ -72,9 +79,9 @@ export class MessagesService {
         return createdMessage.save();
     }
 
-    async getKey(author: UUID, receiver: UUID): Promise<Message | null> {
+    async getKey(author: UUID, receiver: UUID, returnRsaKey: boolean = true ): Promise<Message | null> {
         const key = (await this.MessageModel.findOne({
-            type: "key",
+            type: returnRsaKey ? "rsa_key" : "aes_key",
             author: author,
             receiver: receiver
         }));
@@ -87,7 +94,7 @@ export class MessagesService {
 
     async deleteAllMessages(users: UUID[], deleteKeys: boolean = true): Promise<void> {
         await this.MessageModel.deleteMany({
-            type: deleteKeys ? { $or: ["message", "key"] } : "message",
+            type: deleteKeys ? { $or: ["message", "aes_key", "rsa_key"] } : "message",
             $or: [
                 { author: users[0], receiver: users[1] },
                 { author: users[1], receiver: users[0] }
@@ -96,15 +103,23 @@ export class MessagesService {
     }
 
     async isConversationReady(users: UUID[]): Promise<Boolean> {
-        let keysNumber = await this.MessageModel.countDocuments({
-            type: "key",
+        const RSAKeysNumber = await this.MessageModel.countDocuments({
+            type: "rsa_key",
             $or: [
                 { author: users[0], receiver: users[1] },
                 { author: users[1], receiver: users[0] }
             ]
         });
 
-        return keysNumber >= 2;
+        const AESKeysNumber = await this.MessageModel.countDocuments({
+            type: "aes_key",
+            $or: [
+                { author: users[0], receiver: users[1] },
+                { author: users[1], receiver: users[0] }
+            ]
+        });
+
+        return RSAKeysNumber === 1 && AESKeysNumber === 1;
     }
 
 }

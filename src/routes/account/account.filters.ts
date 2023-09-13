@@ -4,6 +4,7 @@ import {
     ArgumentsHost
 } from '@nestjs/common';
 import mongoose, { Error } from 'mongoose';
+import { InvalidKey } from 'src/exceptions/InvalidKey';
 
 import { NameDoesntMatch } from 'src/exceptions/NameDoesntMatch';
 import { NameTaken } from 'src/exceptions/NameTaken';
@@ -20,6 +21,9 @@ export class MongoErrorFilter implements ExceptionFilter {
         switch (exception.path) {
             case "name":
                 throw new NameTaken();
+            
+            case "publicKey":
+                throw new InvalidKey();
             
             default:
                 host.switchToHttp().getResponse().status(500).send()

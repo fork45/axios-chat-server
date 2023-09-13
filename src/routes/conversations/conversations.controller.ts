@@ -8,16 +8,14 @@ import {
     Body,
     HttpCode
 } from '@nestjs/common';
-import { UUID, publicEncrypt } from 'crypto';
+import { UUID } from 'crypto';
 
 import { MessagesService } from 'src/database/messages.service';
 import { UsersService } from 'src/database/users.service';
-import { ConversationUser, PublicUser, Token } from 'src/types/users';
+import { Profile, Token } from 'src/types/users';
 import { ConversationsService } from './conversations.service';
 import { NoConversation } from 'src/exceptions/NoConversation';
 import { ConversationExists } from 'src/exceptions/ConversationExists';
-import { ConversationNotReady } from 'src/exceptions/ConversationNotReady';
-import { InvalidKey } from 'src/exceptions/InvalidKey';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -31,21 +29,8 @@ export class ConversationsController {
     @Get()
     async getConversations(
         @Headers("Authorization") token: Token
-    ): Promise<ConversationUser[]> {
+    ): Promise<Profile[]> {
         return this.conversations.getConversations((await this.users.getUserByToken(token)).id);
-    }
-
-    @Get(":user")
-    async getUser(
-        @Headers("Authorization") token: Token,
-        @Param("user") user: UUID
-    ): Promise<ConversationUser> {
-        let requester = await this.users.getUserByToken(token);
-
-        if (!await this.messages.isConversationReady([requester.id, user]))
-            throw new ConversationNotReady();
-        
-        return (await this.conversations.getConversation(requester.id, user));
     }
 
     @Post()
@@ -61,14 +46,8 @@ export class ConversationsController {
         if (receiver.conversationsWith.includes(author.id))
             throw new ConversationExists();
 
-        try {
-            publicEncrypt(key, Buffer.from(`qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567899100$@!#(),./;:[]{}|\<>?^&*_-=+"'`))
-        } catch (error) {
-            throw new InvalidKey();
-        }
-
         await this.conversations.createConversation([author.id, receiver.id]);
-        await this.messages.sendKey(key, author.id, receiver.id);
+        await this.messages.sendKey(key, author.id, receiver.id, false);
     }
 
     @Delete(":user")

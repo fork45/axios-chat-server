@@ -39,10 +39,11 @@ export const MessageSchema = SchemaFactory.createForClass(Message);
 MessageSchema.virtual("publicData").get(function () {
     delete this._id;
 
-    if (this.type === "key") {
+    if (!(this.type === "message"))
         delete this.read;
-        delete this.editDatetime;
-    }
+    
+    if (this.type === "rsa_key")
+        delete this.editDatetime
 
     return this;
 });
