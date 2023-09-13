@@ -22,6 +22,9 @@ export class Message extends Document {
     @Prop({ required: true, maxlength: 1200, minlength: 1 })
     content: string;
 
+    @Prop({ required: false })
+    iv: string;
+
     @Prop({ required: true, immutable: true })
     datetime: number;
 
@@ -39,8 +42,10 @@ export const MessageSchema = SchemaFactory.createForClass(Message);
 MessageSchema.virtual("publicData").get(function () {
     delete this._id;
 
-    if (!(this.type === "message"))
+    if (!(this.type === "message")) {
         delete this.read;
+        delete this.iv;        
+    }
     
     if (this.type === "rsa_key")
         delete this.editDatetime

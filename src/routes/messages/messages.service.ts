@@ -20,7 +20,7 @@ export class MessagesService {
         private sockets: SocketsService
     ) {}
 
-    async sendMessage(author: UUID, receiver: UUID, content: string): Promise<Message> {
+    async sendMessage(author: UUID, receiver: UUID, content: string, iv: string): Promise<Message> {
         if (!(await this.messages.isConversationReady([author, receiver])))
             throw new NoConversation();
         
@@ -29,10 +29,11 @@ export class MessagesService {
             author: author,
             receiver: receiver,
             content: content,
+            iv: iv,
             datetime: Date.now() * 1000,
         });
 
-        return createdMessage.save();
+        return await createdMessage.save();
     }
 
     async getMessages(users: UUID[], limit: number = 50, after: MessageId = null, markAsRead: boolean = true): Promise<Message[]> {

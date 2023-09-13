@@ -39,7 +39,8 @@ export class MessagesController {
     async createMessage(
         @Headers("Authorization") token: Token,
         @Body("user") user: UUID,
-        @Body("content") content: string
+        @Body("content") content: string,
+        @Body("iv") iv: string
     ): Promise<Message> {
         let requester = await this.users.getUserByToken(token);
 
@@ -48,7 +49,7 @@ export class MessagesController {
         else if (!await this.database.getKey(requester.id, user))
             throw new ConversationNotReady();
 
-        return (await this.messages.sendMessage(requester.id, user, content)).publicData as MessageType;
+        return (await this.messages.sendMessage(requester.id, user, content, iv)).publicData as MessageType;
     }
 
     @Post(":user/bulk")

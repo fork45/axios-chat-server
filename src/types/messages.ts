@@ -9,6 +9,7 @@ export interface Message {
     author: UUID;
     receiver: UUID;
     content: string;
+    iv: string | null;
     datetime: number;
     editDatetime?: number | null;
     read?: boolean;
@@ -16,6 +17,7 @@ export interface Message {
 
 export interface KeyMessage extends Message {
     type: "rsa_key" | "aes_key";
+    iv: null;
     editDatetime: null;
     read: false;
 }

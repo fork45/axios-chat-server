@@ -28,7 +28,7 @@ export class AccountService {
             publicKey: account.publicKey
         });
 
-        return createdUser.save();
+        return await createdUser.save();
     }
 
 }

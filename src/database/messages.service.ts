@@ -76,7 +76,7 @@ export class MessagesService {
             datetime: Date.now() * 1000,
         });
 
-        return createdMessage.save();
+        return await createdMessage.save();
     }
 
     async getKey(author: UUID, receiver: UUID, returnRsaKey: boolean = true ): Promise<Message | null> {
