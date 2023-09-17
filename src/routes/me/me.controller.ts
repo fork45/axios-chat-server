@@ -11,8 +11,9 @@ import {
 
 import { UsersService } from 'src/database/users.service';
 import { Token, User } from 'src/types/users';
-import { generatePasswordHash } from 'src/utils/users';
+import { generatePasswordHash, generateToken } from 'src/utils/users';
 import { MeService } from './me.service';
+import { createHash } from 'crypto';
 
 @Controller('@me')
 export class MeController {
@@ -39,12 +40,20 @@ export class MeController {
     }
 
     @Patch("password")
-    @HttpCode(204)
     async changePassword(
         @Body("password") password: string,
         @Body("newPassword") newPassword: string
-    ): Promise<void> {
-        (await this.users.getUserByPassword(password)).updateOne({ password: generatePasswordHash(newPassword) });
+    ): Promise<{ token: Token }> {
+        const user = await this.users.getUserByPassword(password)
+
+        const passwordHash = generatePasswordHash(newPassword);
+        const token = generateToken(user.id, newPassword);
+        user.updateOne({
+            password: passwordHash,
+            token: createHash("sha256").update(generateToken(user.id, newPassword)).digest("hex")
+        });
+
+        return { token: token };
     }
     
 }

@@ -17,18 +17,19 @@ export class AccountService {
     async createAccount(account: CreateAccountDTO): Promise<User> {
         const uuid = randomUUID();
         const passwordHash = generatePasswordHash(account.password);
-        const token = createHash("sha256").update(generateToken(uuid, account.password)).digest("hex");
+        const token = generateToken(uuid, account.password)
 
         const createdUser = new this.UserModel({
             id: uuid,
             name: account.name,
             nickname: account.nickname,
             password: passwordHash,
-            token: token,
+            token: createHash("sha256").update(token).digest("hex"),
             publicKey: account.publicKey
         });
 
-        return await createdUser.save();
+        (await createdUser.save()).token = token;
+        return createdUser;
     }
 
 }

@@ -2,7 +2,6 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { createHash, UUID } from 'crypto';
-import mongoose from 'mongoose';
 
 import { User } from './schemas/user.schema';
 import { generatePasswordHash } from "src/utils/users"

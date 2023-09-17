@@ -106,15 +106,8 @@ export class SocketsService {
 
                     if (data.fullDocumentBeforeChange.content === data.fullDocument.content) break;
 
-                    eventName = "messageEdit";
+                    eventName = data.fullDocument.type === "message" ? "messageEdit" : "aesKeyEdit";
                     eventData = data.fullDocument.publicData;
-
-                    await data.fullDocument.updateOne({
-                        $set: { editDatetime: new Date().getTime() / 1000 }
-                    });
-
-                    if (!(data.fullDocument.type === "message"))
-                        eventName = "aesKeyEdit"
 
                     break;
 

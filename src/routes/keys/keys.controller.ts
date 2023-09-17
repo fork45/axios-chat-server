@@ -5,7 +5,8 @@ import {
     Body,
     Headers,
     HttpCode,
-    Query
+    Query,
+    Param
 } from '@nestjs/common';
 import { UUID } from 'crypto';
 
@@ -40,7 +41,7 @@ export class KeyController {
         if (this.messages.isConversationReady([author.id, user]))
             throw new ConversationExists();
         else if (this.messages.getKey(author.id, user, false))
-            
+            throw new ConversationExists();
         
         
         if (!isValidPublicRsaKey(key))
@@ -53,7 +54,7 @@ export class KeyController {
     @Get(":user")
     async getKey(
         @Headers("Authorization") token: Token,
-        @Body("user") user: UUID,
+        @Param("user") user: UUID,
         @Query("key") key: "rsa" | "aes"
     ): Promise<KeyMessage> {
         let author = await this.users.getUserByToken(token);

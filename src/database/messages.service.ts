@@ -4,16 +4,42 @@ import { InjectModel } from '@nestjs/mongoose';
 import { UUID } from 'crypto';
 import mongoose from 'mongoose';
 
-import { User } from './schemas/user.schema';
 import { Message } from './schemas/message.schema';
 import { SocketsService } from 'src/socket/sockets.service';
 
 @Injectable()
 export class MessagesService {
     constructor(
-        @InjectModel(User.name) private UserModel: Model<User>,
         @InjectModel(Message.name) private MessageModel: Model<Message>,
-    ) {}
+        private sockets: SocketsService
+    ) {
+        this.MessageModel.watch([], { fullDocument: "updateLookup" }).on("change", async (data: mongoose.mongo.ChangeStreamDocument<Message>) => {
+            let users: UUID[] = [];
+
+            let eventName: string;
+            let eventData: any;
+
+            switch (data.operationType) {
+                case 'update':
+                    if (data.txnNumber) return;
+                    users.push(data.fullDocumentBeforeChange.author, data.fullDocumentBeforeChange.receiver);
+
+                    if (data.fullDocumentBeforeChange.content !== data.fullDocument.content)
+                        await data.fullDocument.updateOne({
+                            $set: { editDatetime: new Date().getTime() / 1000 }
+                        });
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            for (const user of users) {
+                this.sockets[user]?.emit(eventName, eventData);
+            }
+        });
+    }
 
     async sendKey(key: string, author: UUID, receiver: UUID, isRSAKey: boolean = true): Promise<Message> {
         const createdMessage = new this.MessageModel({

@@ -105,17 +105,21 @@ export class MessagesController {
         return Promise.all(messages.map(message => message.publicData as MessageType));;
     }
 
-    @Get(":message")
+    @Get(":user/:message")
     async getMessage(
         @Headers("Authorization") token: Token,
         @Param("message") messageId: MessageId,
+        @Param("user") user: UUID,
     ): Promise<Message> {
         let requester = await this.users.getUserByToken(token);
+
+        if (!requester.conversationsWith.includes(user))
+            throw new NoConversation();
+
         let message = await this.messages.getMessageById(messageId);
 
         if (requester.id !== message.author || requester.id !== message.receiver)
             throw new MessageNotFound();
-        
 
         return message.publicData as MessageType;
     }
