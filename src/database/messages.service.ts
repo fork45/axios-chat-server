@@ -13,59 +13,7 @@ export class MessagesService {
     constructor(
         @InjectModel(User.name) private UserModel: Model<User>,
         @InjectModel(Message.name) private MessageModel: Model<Message>,
-        private sockets: SocketsService
-    ) {
-        this.MessageModel.watch([], { fullDocument: "updateLookup" }).on("change", async (data: mongoose.mongo.ChangeStreamDocument<Message>) => {
-            let users: UUID[] = [];
-
-            let eventName: string;
-            let eventData: any;
-            
-            switch (data.operationType) {
-                case "insert":
-                    users.push(data.fullDocument.author, data.fullDocument.receiver);
-
-                    eventName = data.fullDocument.type === "message" ? "newMessage" : ( data.fullDocument.type === "aes_key" ? "aesKey" : "rsaKey" );
-                    eventData = data.fullDocument.publicData;
-                    break;
-                
-                case "delete":
-                    if (data.txnNumber) return;
-                    users.push(data.fullDocumentBeforeChange.author, data.fullDocumentBeforeChange.receiver);
-
-                    eventName = "deleteMessage";
-                    eventData = { id: data.fullDocumentBeforeChange.id };
-                    break;
-                
-                case 'update':
-                    if (data.txnNumber) return;
-                    users.push(data.fullDocumentBeforeChange.author, data.fullDocumentBeforeChange.receiver);
-                    
-                    if (data.fullDocumentBeforeChange.content !== data.fullDocument.content) {
-                        eventName = "messageEdit";
-                        eventData = data.fullDocument.publicData;
-
-                        await data.fullDocument.updateOne({
-                            $set: {editDatetime: new Date().getTime() / 1000}
-                        });
-
-                        if (!(data.fullDocument.type === "message"))
-                            eventName = "aesKeyEdit"
-                    } else if (data.fullDocumentBeforeChange.read !== data.fullDocument.read) {
-                        eventName = "readMessage";
-                        eventData = { id: data.fullDocument.id };
-                    }
-                    break;
-
-                default:
-                    break;
-            }
-
-            for (const user of users) {
-                this.sockets.sockets[user].emit(eventName, eventData);
-            }
-        })
-    }
+    ) {}
 
     async sendKey(key: string, author: UUID, receiver: UUID, isRSAKey: boolean = true): Promise<Message> {
         const createdMessage = new this.MessageModel({

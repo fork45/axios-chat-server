@@ -58,9 +58,6 @@ export class KeyController {
     ): Promise<KeyMessage> {
         let author = await this.users.getUserByToken(token);
 
-        if (!await this.messages.isConversationReady([author.id, user]))
-            throw new ConversationNotReady();
-
         return (await this.messages.getKey(author.id, user, key === "rsa")).publicData as KeyMessage;
     }
 

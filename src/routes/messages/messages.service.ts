@@ -70,11 +70,9 @@ export class MessagesService {
             id: { $in: messagesIds }
         });
 
-        for (let i = 0; i < messages.length; i++) {
-            const message = messages[i]
-            
+        for await (const message of messages) {
             if (!message)
-                throw new MessageNotFound(messagesIds[i]);
+                throw new MessageNotFound(message.id);
             else if (message.author !== requester)
                 throw new NoPermissionToDelete();
         }
@@ -84,8 +82,8 @@ export class MessagesService {
             id: { $in: messagesIds }
         });
 
-        this.sockets.sockets[requester].emit("deleteMessages", messagesIds);
-        this.sockets.sockets[receiver].emit("deleteMessages", messagesIds);
+        this.sockets.sockets[requester]?.emit("deleteMessages", messagesIds);
+        this.sockets.sockets[receiver]?.emit("deleteMessages", messagesIds);
     }
 
     async markMessagesAsReadByIds(messagesIds: MessageId[], author: UUID, receiver: UUID): Promise<void> {

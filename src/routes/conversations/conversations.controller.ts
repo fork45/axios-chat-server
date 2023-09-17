@@ -16,6 +16,7 @@ import { Profile, Token } from 'src/types/users';
 import { ConversationsService } from './conversations.service';
 import { NoConversation } from 'src/exceptions/NoConversation';
 import { ConversationExists } from 'src/exceptions/ConversationExists';
+import { NoSelfConversations } from 'src/exceptions/SelfConversation';
 
 @Controller('conversations')
 export class ConversationsController {
@@ -37,11 +38,15 @@ export class ConversationsController {
     @HttpCode(204)
     async createConversation(
         @Headers("Authorization") token: Token, 
-        @Body("user") user: string,
+        @Body("user") user: UUID,
         @Body("key") key: string
     ): Promise<void> {
-        let author = await this.users.getUserByToken(token);
-        let receiver = await this.users.getUserByName(user);
+        const author = await this.users.getUserByToken(token);
+
+        if (author.id === user)
+            throw new NoSelfConversations();
+
+        const receiver = await this.users.getUserByName(user);
 
         if (receiver.conversationsWith.includes(author.id))
             throw new ConversationExists();
@@ -56,7 +61,7 @@ export class ConversationsController {
         @Headers("Authorization") token: Token,
         @Param("user") user: UUID
     ) {
-        let author = await this.users.getUserByToken(token);
+        const author = await this.users.getUserByToken(token);
 
         if (!author.conversationsWith.includes(user))
             throw new NoConversation();
